@@ -1,0 +1,6 @@
+# ignore some file
+*/Debug/
+*/x64/
+*.opensdf
+.vs/
+Debug/
