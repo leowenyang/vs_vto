@@ -4,3 +4,7 @@
 *.opensdf
 .vs/
 Debug/
+*.mp4
+*.mov
+*.h264
+*.jpg
