@@ -1,9 +1,11 @@
-
+#define FFMLIB_C
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+
+#define __STDC_CONSTANT_MACROS
 
 
 #include "ffmlib.h"
@@ -13,21 +15,7 @@
 //#pragma warning(disable:2059)
 //#pragma warning(disable:2664)
 
-AVFormatContext *ifmt_ctx;
-AVFormatContext *ofmt_ctx;
 
-typedef struct FilteringContext {
-	AVFilterContext *buffersink_ctx;
-	AVFilterContext *buffersrc_ctx;
-	AVFilterGraph *filter_graph;
-} FilteringContext;
-FilteringContext *filter_ctx;
-
-typedef struct StreamContext {
-	AVCodecContext *dec_ctx;
-	AVCodecContext *enc_ctx;
-} StreamContext;
-StreamContext *stream_ctx;
 
 int open_input_file(const char *filename)
 {

@@ -1,3 +1,5 @@
+#define X_OPGLIB
+
 #include <stdio.h>
 #include <string>
 #include <vector>
@@ -9,10 +11,6 @@ using namespace std;
 
 #include "opglib.h"
 #include "stb_image.h"
-
-
-#define WINDOW_WIDTH 800
-#define WINDOW_HEIGHT 600
 
 GLubyte *createPixelBuffer(GLuint w, GLuint h)
 {
@@ -175,8 +173,7 @@ GLuint loadShaders(const GLchar *vertex_file_path, const GLchar *fragment_file_p
 GLvoid snap_shot(GLuint w, GLuint h, GLubyte *buffer)
 {
 	// ¶ÁÈ¡ÏñËØ 
-	//glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 	//glReadPixels(0, 0, img_w, img_h, GL_BGR_EXT, GL_UNSIGNED_BYTE, buffer);
 	glReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, buffer);
 }

@@ -97,7 +97,7 @@ int main(int argc, char **argv)
 	gl_frame->width = width;
 	gl_frame->height = height;
 	gl_frame->format = gl_pix_fmt;
-
+	stream_ctx->dec_ctx;
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -154,9 +154,6 @@ int main(int argc, char **argv)
 				filt_frame->format = frame->format;
 				filt_frame->width = frame->width;
 				filt_frame->height = frame->height;
-				filt_frame->channels = frame->channels;
-				filt_frame->channel_layout = frame->channel_layout;
-				filt_frame->nb_samples = frame->nb_samples;
 				filt_frame->pts = frame->pts;
 
 				/* convert to destination format */
