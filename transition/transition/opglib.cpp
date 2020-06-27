@@ -14,6 +14,28 @@ using namespace std;
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
 
+GLubyte *createPixelBuffer(GLuint w, GLuint h)
+{
+	GLubyte* pPixelData;
+	GLint lineWidth;
+	GLint PixelDataLength;
+
+	lineWidth = w * 3; // 得到每一行的像素数据长度 
+	lineWidth = (lineWidth + 3) / 4 * 4;
+	PixelDataLength = lineWidth * h;
+
+	// 分配内存和打开文件 
+	pPixelData = (GLubyte*)malloc(PixelDataLength);
+	if (pPixelData == 0)
+		return NULL;
+	return pPixelData;
+}
+
+GLvoid freePixelBuffer(GLubyte* buffer)
+{
+	free(buffer);
+}
+
 
 GLuint loadFrameTexture(const GLchar *data, GLuint width, GLuint height)
 {
@@ -150,6 +172,15 @@ GLuint loadShaders(const GLchar *vertex_file_path, const GLchar *fragment_file_p
 	return ProgramID;
 }
 
+GLvoid snap_shot(GLuint w, GLuint h, GLubyte *buffer)
+{
+	// 读取像素 
+	//glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	//glReadPixels(0, 0, img_w, img_h, GL_BGR_EXT, GL_UNSIGNED_BYTE, buffer);
+	glReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, buffer);
+}
+
 
 // OpenGL初始化开始
 GLvoid opengl_init(GLuint w, GLuint h)
@@ -190,10 +221,10 @@ GLvoid load_VBO_VAO_EBO(GLuint &VBO, GLuint &VAO, GLuint &EBO)
     // 正方形
 	GLfloat vertices[] = {
 		//     ---- 位置 ----       ---- 颜色 ----     - 纹理坐标 -
-		0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // 右上
-		0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // 右下
-		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // 左下
-		-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // 左上
+		1.0f,  1.0f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // 右上
+		1.0f, -1.0f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // 右下
+		-1.0f, -1.0f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // 左下
+		-1.0f,  1.0f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // 左上
 	};
 	GLuint indices[] = { // 注意索引从0开始! 
 		0, 1, 3, // 第一个三角形

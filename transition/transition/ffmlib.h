@@ -31,6 +31,7 @@ bool get_frame_from_package(AVPacket *packet, AVFrame *frame, int *got_frame);
 AVFrame *transfer_frame(AVPacket *packet, AVFrame *frame, SwsContext* swsContext);
 bool read_frame();
 int filter_encode_write_frame(AVFrame *frame, unsigned int stream_index);
+int encode_write_frame(AVFrame *filt_frame, unsigned int stream_index, int *got_frame);
 int flush_encoder(unsigned int stream_index);
 void write_file_tail(void);
 

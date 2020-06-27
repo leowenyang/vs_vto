@@ -10,9 +10,16 @@
 
 #include <gl/GL.h>
 
+// Data
+
+// Function
+GLubyte *createPixelBuffer(GLuint w, GLuint h);
+GLvoid freePixelBuffer(GLubyte* buffer);
+
 GLuint loadImgTexture(const GLchar *filename);
 GLuint loadFrameTexture(const GLchar *filename, GLuint width, GLuint height);
 GLuint loadShaders(const GLchar *vertex_file_path, const GLchar *fragment_file_path);
+GLvoid snap_shot(GLuint w, GLuint h, GLubyte *buffer);
 
 GLFWwindow *opengl_window_init(GLuint w, GLuint h);
 GLvoid close_opengl_window(GLFWwindow *window);
