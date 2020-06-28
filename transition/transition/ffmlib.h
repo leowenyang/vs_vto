@@ -22,6 +22,7 @@ extern "C" {
 /***** Public constant definition *****/
 X_FFMLIB AVFormatContext *ifmt_ctx;
 X_FFMLIB AVFormatContext *ofmt_ctx;
+X_FFMLIB unsigned int video_stream_index;
 
 typedef struct FilteringContext {
 	AVFilterContext *buffersink_ctx;

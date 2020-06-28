@@ -24,7 +24,7 @@ X_OPGLIB GLubyte *createPixelBuffer(GLuint w, GLuint h);
 X_OPGLIB GLvoid freePixelBuffer(GLubyte* buffer);
 
 X_OPGLIB GLuint loadImgTexture(const GLchar *filename);
-X_OPGLIB GLuint loadFrameTexture(const GLchar *filename, GLuint width, GLuint height);
+X_OPGLIB GLuint loadFrameTexture(GLchar *data, GLuint width, GLuint height);
 X_OPGLIB GLuint loadShaders(const GLchar *vertex_file_path, const GLchar *fragment_file_path);
 X_OPGLIB GLvoid snap_shot(GLuint w, GLuint h, GLubyte *buffer);
 

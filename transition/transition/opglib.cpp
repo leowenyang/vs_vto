@@ -35,7 +35,7 @@ GLvoid freePixelBuffer(GLubyte* buffer)
 }
 
 
-GLuint loadFrameTexture(const GLchar *data, GLuint width, GLuint height)
+GLuint loadFrameTexture(GLchar *data, GLuint width, GLuint height)
 {
 	GLuint texture;
 	glGenTextures(1, &texture);
@@ -48,7 +48,6 @@ GLuint loadFrameTexture(const GLchar *data, GLuint width, GLuint height)
 	// 加载并生成纹理
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 	glGenerateMipmap(GL_TEXTURE_2D);
-
 	return texture;
 }
 
@@ -64,7 +63,7 @@ GLuint loadImgTexture(const GLchar *filename)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	// 加载并生成纹理
 	int width, height, nrChannels;
-	stbi_set_flip_vertically_on_load(true);
+	//stbi_set_flip_vertically_on_load(true);
 	unsigned char *data = stbi_load(filename, &width, &height, &nrChannels, 0);
 	if (data)
 	{
@@ -218,10 +217,10 @@ GLvoid load_VBO_VAO_EBO(GLuint &VBO, GLuint &VAO, GLuint &EBO)
     // 正方形
 	GLfloat vertices[] = {
 		//     ---- 位置 ----       ---- 颜色 ----     - 纹理坐标 -
-		1.0f,  1.0f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // 右上
-		1.0f, -1.0f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // 右下
-		-1.0f, -1.0f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // 左下
-		-1.0f,  1.0f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // 左上
+		1.0f,  1.0f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1- 1.0f,   // 右上
+		1.0f, -1.0f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 1 - 0.0f,   // 右下
+		-1.0f, -1.0f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 1 - 0.0f,   // 左下
+		-1.0f,  1.0f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1 - 1.0f    // 左上
 	};
 	GLuint indices[] = { // 注意索引从0开始! 
 		0, 1, 3, // 第一个三角形
