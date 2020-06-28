@@ -58,8 +58,6 @@ int main(int argc, char **argv)
 		return NULL;
 	}
 
-
-
 	// SET FRAME BUFFER SIZE
 	int width = WINDOW_WIDTH;
 	int height = WINDOW_HEIGHT;
@@ -70,7 +68,8 @@ int main(int argc, char **argv)
 	GLuint VAO, VBO, EBO;
 	load_VBO_VAO_EBO(VBO, VAO, EBO);
 	GLuint shaderProgram;
-	shaderProgram = loadShaders("vertexshader.glsl", "fragmentshader.glsl");
+	// shaderProgram = loadShaders("./shader/vertexshader.glsl", "./shader/fragmentshader.glsl");
+	shaderProgram = loadShaders("./shader/vertexshader.glsl", "./shader/rotate_scale_fade_frag.glsl");
 
 	glUseProgram(shaderProgram);
 	GLuint texture1 = loadImgTexture("baby.jpg");
@@ -86,13 +85,13 @@ int main(int argc, char **argv)
 		return NULL;
 	}
 
+	gl_frame->width = width;
+	gl_frame->height = height;
+	gl_frame->format = AV_PIX_FMT_RGB24;
 	if ((ret = av_image_fill_arrays(gl_frame->data, gl_frame->linesize, pixelBuffer,
 		AV_PIX_FMT_RGB24, width, height,  16)) < 0) {
 		fprintf(stderr, "Could not allocate destination image\n");
 	}
-	gl_frame->width = width;
-	gl_frame->height = height;
-	gl_frame->format = AV_PIX_FMT_RGB24;
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -118,7 +117,6 @@ int main(int argc, char **argv)
 					frame->linesize, 0, src_h, dst_data, dst_linesize);
 
 				glUseProgram(shaderProgram);
-				texture2 = NULL;
 				texture2 = loadFrameTexture((GLchar *)dst_data[0], frame->width, frame->height);
 				av_freep(&dst_data[0]);
 				glUniform1i(glGetUniformLocation(shaderProgram, "texture2"), 1);
@@ -164,14 +162,16 @@ int main(int argc, char **argv)
 		av_packet_unref(&packet);
 	}
 
+	write_file_tail();
+end:
 	freePixelBuffer(pixelBuffer);
 	close_opengl_window(window);
 
-	write_file_tail();
-end:
 	sws_freeContext(swsContext);
 	sws_freeContext(gl_swsContext);
+	av_frame_free(&gl_frame);
 	av_frame_free(&frame);
+
 	close_filters();
 	close_input_file();
 	close_output_file();
