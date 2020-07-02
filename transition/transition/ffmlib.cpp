@@ -7,7 +7,6 @@
 
 #define __STDC_CONSTANT_MACROS
 
-
 #include "ffmlib.h"
 
 #pragma warning(disable:4576)
@@ -77,6 +76,7 @@ int open_input_file(const char *filename)
 	return 0;
 }
 
+
 void close_input_file(void)
 {
 	for (unsigned int i = 0; i < ifmt_ctx->nb_streams; i++) {
@@ -87,7 +87,6 @@ void close_input_file(void)
 	av_free(stream_ctx);
 	avformat_close_input(&ifmt_ctx);
 }
-
 
 int open_output_file(const char *filename)
 {
@@ -208,12 +207,14 @@ int open_output_file(const char *filename)
 	return 0;
 }
 
+
 void close_output_file(void)
 {
 	if (ofmt_ctx && !(ofmt_ctx->oformat->flags & AVFMT_NOFILE))
 		avio_closep(&ofmt_ctx->pb);
 	avformat_free_context(ofmt_ctx);
 }
+
 
 int init_filter(FilteringContext* fctx, AVCodecContext *dec_ctx,
 	AVCodecContext *enc_ctx, const char *filter_spec)
@@ -396,6 +397,7 @@ int init_filters(void)
 	return 0;
 }
 
+
 void close_filters(void)
 {
 	for (unsigned int i = 0; i < ifmt_ctx->nb_streams; i++) {
@@ -405,12 +407,15 @@ void close_filters(void)
 	av_free(filter_ctx);
 }
 
+
+
 bool read_video_package(AVPacket *packet)
 {
 	if (int ret = av_read_frame(ifmt_ctx, packet) < 0)
 		return false;
 	return true;
 }
+
 
 bool get_frame_from_package(AVPacket *packet, AVFrame *frame, int *got_frame)
 {
@@ -466,72 +471,6 @@ bool get_frame_from_package(AVPacket *packet, AVFrame *frame, int *got_frame)
 		if (ret < 0)
 			return false;
 	}
-	return true;
-}
-// read a video frame
-bool read_frame() 
-{
-	int ret;
-	int stream_index;
-	int got_frame;
-	AVFrame *frame = NULL;
-	enum AVMediaType type;
-	int(*dec_func)(AVCodecContext *, AVFrame *, int *, const AVPacket *);
-	AVPacket packet;
-	packet.data = NULL;
-	packet.size = 0;
-	av_init_packet(&packet);
-
-	if ((ret = av_read_frame(ifmt_ctx, &packet)) < 0)
-		return false;
-
-	stream_index = packet.stream_index;
-	type = ifmt_ctx->streams[packet.stream_index]->codecpar->codec_type;
-	av_log(NULL, AV_LOG_DEBUG, "Demuxer gave frame of stream_index %u\n",
-		stream_index);
-
-	if (filter_ctx[stream_index].filter_graph) {
-		av_log(NULL, AV_LOG_DEBUG, "Going to reencode&filter the frame\n");
-		frame = av_frame_alloc();
-		if (!frame) {
-			ret = AVERROR(ENOMEM);
-			return false;
-		}
-		av_packet_rescale_ts(&packet,
-			ifmt_ctx->streams[stream_index]->time_base,
-			stream_ctx[stream_index].dec_ctx->time_base);
-		dec_func = (type == AVMEDIA_TYPE_VIDEO) ? avcodec_decode_video2 :
-			avcodec_decode_audio4;
-		ret = dec_func(stream_ctx[stream_index].dec_ctx, frame,
-			&got_frame, &packet);
-		if (ret < 0) {
-			av_frame_free(&frame);
-			av_log(NULL, AV_LOG_ERROR, "Decoding failed\n");
-			return false;
-		}
-
-		if (got_frame) {
-			frame->pts = frame->best_effort_timestamp;
-			ret = filter_encode_write_frame(frame, stream_index);
-			av_frame_free(&frame);
-			if (ret < 0)
-				return false;
-		}
-		else {
-			av_frame_free(&frame);
-		}
-	}
-	else {
-		/* remux this frame without reencoding */
-		av_packet_rescale_ts(&packet,
-			ifmt_ctx->streams[stream_index]->time_base,
-			ofmt_ctx->streams[stream_index]->time_base);
-
-		ret = av_interleaved_write_frame(ofmt_ctx, &packet);
-		if (ret < 0)
-			return false;
-	}
-	av_packet_unref(&packet);
 	return true;
 }
 
@@ -594,58 +533,6 @@ int encode_write_frame(AVFrame *filt_frame, unsigned int stream_index, int *got_
 	/* mux encoded frame */
 	ret = av_interleaved_write_frame(ofmt_ctx, &enc_pkt);
 	return ret;
-}
-
-AVFrame *transfer_frame(AVPacket *packet, AVFrame *frame, SwsContext* swsContext)
-{
-	int stream_index;
-	//struct SwsContext* swsContext = NULL;
-	AVFrame *sws_frame;
-	stream_index = packet->stream_index;
-	sws_frame = av_frame_alloc();
-	if (!sws_frame) {
-		printf("sws_frame av_frame_alloc failed\n");
-		exit(1);
-	}
-	sws_frame->format = AV_PIX_FMT_RGB24;
-	frame->width = stream_ctx[stream_index].dec_ctx->width;
-	frame->height = stream_ctx[stream_index].dec_ctx->height;
-
-	
-	//if (avpicture_alloc((AVPicture *)sws_frame, AV_PIX_FMT_RGB24, 
-	//	stream_ctx[stream_index].dec_ctx->width,
-	//	stream_ctx[stream_index].dec_ctx->height) < 0) {
-	//	printf("dst_picture avpicture_alloc failed\n");
-	//	exit(1);
-	//}
-	if ((av_image_alloc(sws_frame->data, sws_frame->linesize,
-		stream_ctx[stream_index].dec_ctx->width,
-		stream_ctx[stream_index].dec_ctx->height, AV_PIX_FMT_RGB24, 16)) < 0) {
-		fprintf(stderr, "Could not allocate source image\n");
-		exit(1);
-	}
-
-	////打开ffmpeg格式转换和缩放器
-	//swsContext = sws_getContext(
-	//	stream_ctx[stream_index].dec_ctx->width,
-	//	stream_ctx[stream_index].dec_ctx->height,
-	//	stream_ctx[stream_index].dec_ctx->pix_fmt,
-	//	stream_ctx[stream_index].dec_ctx->width, stream_ctx[stream_index].dec_ctx->height,
-	//	AV_PIX_FMT_BGRA, SWS_BICUBIC, NULL, NULL, NULL);
-	//if (!swsContext) {
-	//	printf("sws_getCachedContext failed!\n");
-	//	return NULL;
-	//}
-
-
-	int h = sws_scale(swsContext, frame->data, frame->linesize,
-		0, stream_ctx[stream_index].dec_ctx->height, sws_frame->data, sws_frame->linesize);
-	
-	//sws_freeContext(swsContext);
-	//av_freep(&sws_frame->data);
-	//av_frame_free(&sws_frame);
-	//return sws_frame;
-	return NULL;
 }
 
 int filter_encode_write_frame(AVFrame *frame, unsigned int stream_index)

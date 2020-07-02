@@ -69,7 +69,7 @@ int main(int argc, char **argv)
 	load_VBO_VAO_EBO(VBO, VAO, EBO);
 	GLuint shaderProgram;
 	// shaderProgram = loadShaders("./shader/vertexshader.glsl", "./shader/fragmentshader.glsl");
-	shaderProgram = loadShaders("./shader/vertexshader.glsl", "./shader/rotate_scale_fade_frag.glsl");
+	shaderProgram = loadShaders("./shader/vertexshader.glsl", "./shader/windowslice_frag.glsl");
 
 	glUseProgram(shaderProgram);
 	GLuint texture1 = loadImgTexture("baby.jpg");
@@ -104,7 +104,10 @@ int main(int argc, char **argv)
 			break;
 		}
 		if (get_frame_from_package(&packet, frame, &got_frame)) {
-			if (got_frame && (packet.stream_index == 0)) {
+			if (!got_frame) {
+				continue;
+			}
+			if ((packet.stream_index == video_stream_index) && progress < 1) {
 				progress += 0.01;
 
 				if ((ret = av_image_alloc(dst_data, dst_linesize,
@@ -154,6 +157,9 @@ int main(int argc, char **argv)
 				ret = filter_encode_write_frame(filt_frame, packet.stream_index);
 				av_frame_free(&filt_frame);
 
+			}
+			else {
+				ret = filter_encode_write_frame(frame, packet.stream_index);
 			}
 		}
 		else {
