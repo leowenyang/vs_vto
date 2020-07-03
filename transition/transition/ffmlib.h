@@ -26,14 +26,11 @@ X_FFMLIB AVFormatContext *input_files[MAX_FILES];
 X_FFMLIB AVCodecContext *input_codec_context[MAX_FILES*MAX_STREAMS];
 X_FFMLIB unsigned int nb_input_files;
 X_FFMLIB unsigned int nb_icodec_context;
+X_FFMLIB unsigned int cur_input_file;
 
 X_FFMLIB AVFormatContext *output_files;
 X_FFMLIB AVCodecContext *output_codec_context[MAX_STREAMS];
 X_FFMLIB unsigned int nb_ocodec_context;
-
-X_FFMLIB AVFormatContext *ifmt_ctx;
-X_FFMLIB AVFormatContext *ofmt_ctx;
-X_FFMLIB unsigned int video_stream_index;
 
 typedef struct FilteringContext {
 	AVFilterContext *buffersink_ctx;
@@ -42,26 +39,30 @@ typedef struct FilteringContext {
 } FilteringContext;
 X_FFMLIB FilteringContext *filter_ctx;
 
-typedef struct StreamContext {
-	AVCodecContext *dec_ctx;
-	AVCodecContext *enc_ctx;
-} StreamContext;
-X_FFMLIB StreamContext *stream_ctx;
+
+#define READ_FRAME_PACKET_ERROR    0x01
+#define READ_FRAME_FRAME_ERROR     0x02
+#define READ_FRAME_FRAME_CONTINUE  0x03
+#define READ_FRAME_FRAME_OK        0x04
 
 /***** Public function prototype definition  ******/
 X_FFMLIB void ffmpeg_init(void);
 
-X_FFMLIB void set_cur_input_file(unsigned int index);
+X_FFMLIB void set_input_file(unsigned int index);
 X_FFMLIB int open_input_file(const char *filename);
 X_FFMLIB int open_output_file(const char *filename);
 X_FFMLIB int init_filters(void);
 
 X_FFMLIB void close_filters(void);
+X_FFMLIB void close_input_codec(void);
 X_FFMLIB void close_input_file(void);
+X_FFMLIB void close_output_codec(void);
 X_FFMLIB void close_output_file(void);
 
+X_FFMLIB unsigned int read_frame_from_video(AVPacket *packet, AVFrame *frame);
 X_FFMLIB bool read_video_package(AVPacket *packet);
 X_FFMLIB bool get_frame_from_package(AVPacket *packet, AVFrame *frame, int *got_frame);
+
 X_FFMLIB AVFrame *transfer_frame(AVPacket *packet, AVFrame *frame, SwsContext* swsContext);
 X_FFMLIB int filter_encode_write_frame(AVFrame *frame, unsigned int stream_index);
 X_FFMLIB int encode_write_frame(AVFrame *filt_frame, unsigned int stream_index, int *got_frame);
