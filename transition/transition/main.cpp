@@ -27,6 +27,8 @@ int main(int argc, char **argv)
 	uint8_t *src_data[4], *dst_data[4];
 	int src_linesize[4], dst_linesize[4];
 
+	double pts;
+
 	if (argc != 4) {
 		printf("Usage: %s <input file 1> <input file 2> <output file>\n", argv[0]);
 		return 1;
@@ -80,7 +82,7 @@ int main(int argc, char **argv)
 	load_VBO_VAO_EBO(VBO, VAO, EBO);
 	GLuint shaderProgram;
 	// shaderProgram = loadShaders("./shader/vertexshader.glsl", "./shader/fragmentshader.glsl");
-	shaderProgram = loadShaders("./shader/vertexshader.glsl", "./shader/windowslice_frag.glsl");
+	shaderProgram = loadShaders("./shader/vertexshader.glsl", "./shader/1-directional_frag.glsl");
 
 	glUseProgram(shaderProgram);
 
@@ -110,8 +112,14 @@ int main(int argc, char **argv)
 		// video 1
 		set_input_file(0);
 		ret = read_frame_from_video(&packet, frame);
-		if (ret == READ_FRAME_PACKET_ERROR) break;
+		//if (ret == READ_FRAME_PACKET_ERROR) break;
 		if (ret == READ_FRAME_FRAME_ERROR) goto end;
+		if (!check_to_end_time(frame, 10.0)) {
+			ret = filter_encode_write_frame(frame, packet.stream_index);
+			av_packet_unref(&packet);
+			pts = frame->pts + 1;
+			continue;
+		}
 
 		if ((ret = av_image_alloc(src_data, src_linesize,
 			src_w, src_h, AV_PIX_FMT_RGB24, 16)) < 0) {
@@ -147,7 +155,7 @@ int main(int argc, char **argv)
 		av_freep(&dst_data[0]);
 		glUniform1i(glGetUniformLocation(shaderProgram, "texture2"), 1);
 
-		if (progress < 1) 
+		if (progress < 1.0) 
 		{
 			progress += 0.01;
 			glUniform1f(glGetUniformLocation(shaderProgram, "progress"), progress);
@@ -175,7 +183,8 @@ int main(int argc, char **argv)
 			filt_frame->format = frame->format;
 			filt_frame->width = frame->width;
 			filt_frame->height = frame->height;
-			filt_frame->pts = frame->pts;
+			filt_frame->pts = pts + frame2->pts;
+			//filt_frame->pts = frame->pts;
 			av_frame_get_buffer(filt_frame, 0);
 			av_frame_make_writable(filt_frame);
 
@@ -186,7 +195,8 @@ int main(int argc, char **argv)
 			av_frame_free(&filt_frame);
 		}
 		else {
-			ret = filter_encode_write_frame(frame, packet.stream_index);
+			frame2->pts += pts;
+			ret = filter_encode_write_frame(frame2, packet2.stream_index);
 		}
 
 		av_packet_unref(&packet);

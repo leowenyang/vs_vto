@@ -69,4 +69,6 @@ X_FFMLIB int encode_write_frame(AVFrame *filt_frame, unsigned int stream_index, 
 X_FFMLIB int flush_encoder(unsigned int stream_index);
 X_FFMLIB void write_file_tail(void);
 
+X_FFMLIB bool check_to_end_time(AVFrame *frame, double second);
+
 #endif

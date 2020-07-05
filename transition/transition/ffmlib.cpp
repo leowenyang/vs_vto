@@ -20,6 +20,25 @@ void set_input_file(unsigned int index)
 	cur_input_file = index;
 }
 
+bool check_to_end_time(AVFrame *frame, double second)
+{
+	AVFormatContext *ifmt_ctx = input_files[cur_input_file];
+	unsigned int video_stream_index = av_find_best_stream(ifmt_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
+	double tb = av_q2d(ifmt_ctx->streams[video_stream_index]->codec->time_base);
+	double duration = ifmt_ctx->streams[video_stream_index]->duration
+		             * av_q2d(ifmt_ctx->streams[video_stream_index]->time_base);
+	double cur_time = frame->pts * tb;
+	if (cur_time + second > duration)
+	{
+		return true;
+	} 
+	else
+	{
+		return false;
+	}
+
+}
+
 int open_input_file(const char *filename)
 {
 	int ret;
@@ -438,6 +457,7 @@ unsigned int read_frame_from_video(AVPacket *packet, AVFrame *frame)
 		if (!get_frame_from_package(packet, frame, &got_frame)) {
 			return READ_FRAME_FRAME_ERROR;
 		}
+		//av_find_best_stream()
 		if (!got_frame || frame->pict_type == AV_PICTURE_TYPE_NONE) {
 			continue;
 		}
